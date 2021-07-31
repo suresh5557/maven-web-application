@@ -1,0 +1,54 @@
+pipeline {
+agent any
+options{
+buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5'))
+}
+triggers{
+ pollSCM('* * * * *')
+}
+tools{
+maven "maven3.8.1"
+}
+stages {
+  stage('chekoutcode'){
+  steps {
+      git branch: 'development', credentialsId: 'b13b838b-2641-4294-b21c-eeedc19a6098', url: 'https://github.com/suresh5557/maven-web-application.git' 
+     }
+    }
+    stage('build'){
+        steps{
+          sh "mvn clean package"
+
+        }
+    }
+    stage('executesonarqubereport'){
+        steps{
+         sh "mvn sonar:sonar"
+        }
+    }
+    stage('uploadartifactintonexus'){
+        steps{
+          sh "mvn deploy"
+
+        }
+    }
+    stage('deploytomcat'){
+        steps{
+         sshagent(['97050817-6372-42ec-8e50-c3696d46c273']) {
+        sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@65.1.93.33:/opt/apache-tomcat-9.0.50/webapps/"
+        }
+    }  
+     }
+  }
+    post{
+         success{
+             emailext body: 'build is over !!', subject: 'build is over', to: 'surinapa78@gmail.com'
+         }
+         failure{
+             emailext body: 'build is over !!', subject: 'build is over', to: 'surinapa78@gmail.com'
+         }
+     }
+    }
+        
+
+

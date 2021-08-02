@@ -1,4 +1,4 @@
-node {
+node('nodes) {
     def mavenhome= tool name:'maven3.8.1'
     stage('chekoutcode'){
        git branch: 'development', credentialsId: 'b13b838b-2641-4294-b21c-eeedc19a6098', url: 'https://github.com/suresh5557/maven-web-application.git' 
